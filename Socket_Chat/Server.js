@@ -1,25 +1,32 @@
-const app = require('express')()
-const http = require('http').createServer(app)
-// const io = require('socket.io')(http)
-const PORT = process.env.PORT || 2500
-
-
-// server-side
-const io = require("socket.io")(http, {
-    cors: {
-        origin: "http://localhost:3000/",
-        methods: ["GET", "POST"],
-        allowedHeaders: ["my-custom-header"],
-        credentials: true
-    }
+const server = require("http").createServer();
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
 });
 
-io.on('connection', socket => {
-    socket.on('message', ({chaterName, message}) => {
-        io.emit('message', {chaterName, message})
-    })
-})
+const PORT = 2500;
+const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 
-http.listen(PORT, 'localhost', () => {
-    console.log(`Server is running on http://localhost:${PORT}/`)
-})
+io.on("connection", (socket) => {
+  console.log(`Client ${socket.id} connected`);
+
+  // Join a conversation
+  const { roomId } = socket.handshake.query;
+  socket.join(roomId);
+
+  // Listen for new messages
+  socket.on(NEW_CHAT_MESSAGE_EVENT, (data) => {
+    io.in(roomId).emit(NEW_CHAT_MESSAGE_EVENT, data);
+  });
+
+  // Leave the room if the user closes the socket
+  socket.on("disconnect", () => {
+    console.log(`Client ${socket.id} diconnected`);
+    socket.leave(roomId);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
+});
