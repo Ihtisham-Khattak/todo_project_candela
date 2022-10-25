@@ -16,7 +16,8 @@ function App() {
       <TopNavigationBar />
       <Routes>
         <Route path='/' element={<Dashboard />}>Dashboard</Route>
-        <Route path="/socket" element={<Socket />}>Socket</Route>
+        <Route path="/home" element={<Home />}>Socket</Route>
+        <Route exact path="/:roomId" element={<Socket />} />
         <Route path="/todos" element={<TodoList />}>Todo</Route>
         <Route path="/comments" element={<Comments />}>Comments</Route>
         <Route path="/user" element={<ToggleUser />}></Route>
